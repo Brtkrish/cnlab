@@ -1,71 +1,47 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
 int main() {
-    FILE *fp;
-    struct sockaddr_in servaddr;
-    int sd, port, s;
-    char name[1000], fname[1000], rcvg[1000];
+    int client_socket;
+    struct sockaddr_in server_addr;
+    char buffer[BUFFER_SIZE] = {0};
+    char filename[BUFFER_SIZE] = {0};
 
-    printf("Enter port number: ");
-    scanf("%d", &port);
-
-    sd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sd < 0) {
-        printf("Socket creation error\n");
-        exit(0);
-    }
-    printf("Socket is created...\n");
-
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(port);
-
-    if (connect(sd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-        printf("Connection error\n");
-        exit(0);
-    }
-    printf("Connected...\n");
-
-    printf("Enter the existing file name: ");
-    scanf("%s", name);
-    printf("Enter the new file name: ");
-    scanf("%s", fname);
-
-    fp = fopen(fname, "w");
-    if (fp == NULL) {
-        printf("Could not create file\n");
-        exit(0);
+    client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
     }
 
-    send(sd, name, strlen(name), 0);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    while (1) {
-        s = recv(sd, rcvg, sizeof(rcvg) - 1, 0);
-        if (s <= 0) {
-            printf("Error: File not received\n");
-            break;
-        }
-
-        rcvg[s] = '\0';
-
-        if (strcmp(rcvg, "error") == 0) {
-            printf("File is not available\n");
-            break;
-        } else if (strcmp(rcvg, "completed") == 0) {
-            printf("File is transferred...\n");
-            fclose(fp);
-            close(sd);
-            break;
-        } else {
-            fwrite(rcvg, 1, s, fp);
-        }
+    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Connection failed");
+        exit(EXIT_FAILURE);
     }
+
+    printf("Enter the filename to request: ");
+    scanf("%s", filename);
+    send(client_socket, filename, strlen(filename), 0);
+
+    printf("File content received:\n");
+    
+    
+    while (recv(client_socket, buffer, BUFFER_SIZE - 1, 0) > 0) {
+        printf("%s", buffer);
+        memset(buffer, 0, BUFFER_SIZE);
+    }
+
+    printf("\n");
+    close(client_socket);
 
     return 0;
 }
