@@ -1,119 +1,66 @@
 #include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <netinet/in.h>
+#include <string.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
-int main(int argc, char* argv[]) {
+#define PORT 2525
+#define BUFFER_SIZE 1024
+
+int main() {
+    int server_fd, client_fd;
     struct sockaddr_in server, client;
-    char str[50], msg[20];
+    socklen_t client_len = sizeof(client);
+    char buffer[BUFFER_SIZE];
 
-    if (argc != 2) {
-        printf("Input format not correct\n");
-        return 1;
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) {
+        perror("Socket failed");
+        exit(1);
     }
 
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd == -1) {
-        printf("Error in socket()\n");
-        return 1;
-    }
+    int opt = 1;
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons(atoi(argv[1]));
+    server.sin_port = htons(PORT);
 
-    client.sin_family = AF_INET;
-    client.sin_addr.s_addr = INADDR_ANY;
-    client.sin_port = htons(atoi(argv[1]));
-
-    if (bind(sockfd, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        printf("Error in bind()\n");
-        return 1;
+    if (bind(server_fd, (struct sockaddr *)&server, sizeof(server)) < 0) {
+        perror("Bind failed");
+        exit(1);
     }
 
-    socklen_t client_len = sizeof(client);
-    printf("Server waiting...\n");
-    sleep(3);
+    listen(server_fd, 5);
+    printf("SMTP Server running on port %d...\n", PORT);
 
-    if (recvfrom(sockfd, str, 100, 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recvfrom()\n");
-    printf("Got message from client: %s\n", str);
+    client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
+    send(client_fd, "220 Simple SMTP Server Ready\r\n", 30, 0);
 
-    printf("Sending greeting message to client\n");
-    strcpy(str, "220 127.0.0.1");
-    sleep(10);
-    if (sendto(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, sizeof(client)) < 0)
-        printf("Error in send\n");
+    while (1) {
+        memset(buffer, 0, BUFFER_SIZE);
+        ssize_t bytes = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+        if (bytes <= 0) break;
 
-    sleep(3);
-    if (recvfrom(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recv\n");
-    if (strncmp(str, "HELO", 4) != 0)
-        printf("'HELO' expected from client\n");
-    printf("%s\n", str);
-    printf("Sending response...\n");
-    strcpy(str, "250 ok");
-    if (sendto(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, sizeof(client)) < 0)
-        printf("Error in send\n");
+        printf("C: %s", buffer);
 
-    sleep(3);
-    if (recvfrom(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recv\n");
-    if (strncmp(str, "MAIL FROM", 9) != 0)
-        printf("MAIL FROM expected from client\n");
-    printf("%s\n", str);
-    printf("Sending response...\n");
-    strcpy(str, "250 ok");
-    if (sendto(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, sizeof(client)) < 0)
-        printf("Error in send\n");
+        if (strncmp(buffer, "HELO", 4) == 0) {
+            send(client_fd, "250 Hello\r\n", 11, 0);
+        } else if (strncmp(buffer, "MAIL FROM", 9) == 0) {
+            send(client_fd, "250 OK\r\n", 8, 0);
+        } else if (strncmp(buffer, "RCPT TO", 7) == 0) {
+            send(client_fd, "250 OK\r\n", 8, 0);
+        } else if (strncmp(buffer, "DATA", 4) == 0) {
+            send(client_fd, "354 End data with <CR><LF>.<CR><LF>\r\n", 38, 0);
+        } else if (strstr(buffer, "\r\n.\r\n") != NULL || strcmp(buffer, ".\r\n") == 0) {
+            send(client_fd, "250 Message accepted\r\n", 23, 0);
+        } else if (strncmp(buffer, "QUIT", 4) == 0) {
+            send(client_fd, "221 Bye\r\n", 9, 0);
+            break;
+        }
+    }
 
-    sleep(3);
-    if (recvfrom(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recv\n");
-    if (strncmp(str, "RCPT TO", 7) != 0)
-        printf("RCPT TO expected from client\n");
-    printf("%s\n", str);
-    printf("Sending response...\n");
-    strcpy(str, "250 ok");
-    if (sendto(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, sizeof(client)) < 0)
-        printf("Error in send\n");
-
-    sleep(3);
-    if (recvfrom(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recv\n");
-    if (strncmp(str, "DATA", 4) != 0)
-        printf("DATA expected from client\n");
-    printf("%s\n", str);
-    printf("Sending response...\n");
-    strcpy(str, "354 Go ahead");
-    if (sendto(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, sizeof(client)) < 0)
-        printf("Error in send\n");
-
-    if (recvfrom(sockfd, msg, sizeof(msg), 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recv\n");
-    printf("Mail body received\n");
-    printf("%s\n", msg);
-
-    if (recvfrom(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, &client_len) < 0)
-        printf("Error in recv\n");
-    if (strncmp(str, "QUIT", 4) != 0)
-        printf("QUIT expected from client\n");
-    printf("Sending quit...\n");
-    strcpy(str, "221 OK");
-    if (sendto(sockfd, str, sizeof(str), 0, (struct sockaddr *)&client, sizeof(client)) < 0)
-        printf("Error in send\n");
-
-    close(sockfd);
+    close(client_fd);
+    close(server_fd);
     return 0;
 }
-
-
-
-How to Run:
-Terminal 1 (Server):
-gcc smtp_server.c -o smtp_server
-./smtp_server 5000
