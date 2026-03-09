@@ -1,76 +1,48 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-struct Link {
-    int hop, dest, wt;
-};
-
-struct Network {
-    int H, L;
-    struct Link *link;
-};
-
-int main() {
-    int H, L, S, i, j;
-
-    printf("Enter Number of Hops: ");
-    scanf("%d", &H);
-    printf("Enter Number of Links: ");
-    scanf("%d", &L);
-    printf("Enter Source Node: ");
-    scanf("%d", &S);
-
-    struct Network *n = (struct Network *)malloc(sizeof(struct Network));
-    n->H = H;
-    n->L = L;
-    n->link = (struct Link *)malloc(L * sizeof(struct Link));
-
-    int *dist = (int *)malloc(H * sizeof(int));
-    for (i = 0; i < H; i++)
-        dist[i] = INT_MAX;
-    dist[S] = 0;
-
-    for (i = 0; i < L; i++) {
-        printf("\nLink %d: enter source, destination and weight\n", i + 1);
-        scanf("%d", &n->link[i].hop);
-        scanf("%d", &n->link[i].dest);
-        scanf("%d", &n->link[i].wt);
-    }
-
-    for (i = 0; i < H - 1; i++) {
-        for (j = 0; j < L; j++) {
-            int u = n->link[j].hop;
-            int v = n->link[j].dest;
-            int wt = n->link[j].wt;
-            if (dist[u] != INT_MAX && dist[u] + wt < dist[v])
-                dist[v] = dist[u] + wt;
-        }
-    }
-
-    for (i = 0; i < L; i++) {
-        int u = n->link[i].hop;
-        int v = n->link[i].dest;
-        int wt = n->link[i].wt;
-        if (dist[u] != INT_MAX && dist[u] + wt < dist[v]) {
-            printf("Network contains negative weight cycle\n");
-            free(n->link);
-            free(n);
-            free(dist);
-            return 1;
-        }
-    }
-
-    printf("\nHop\tDistance from Source\n");
-    for (i = 0; i < H; i++) {
-        if (dist[i] == INT_MAX)
-            printf("%d\tUnreachable\n", i);
-        else
-            printf("%d\t%d\n", i, dist[i]);
-    }
-
-    free(n->link);
-    free(n);
-    free(dist);
-    return 0;
+struct router{
+unsigned cost[20];
+unsigned from[20];
+} routingTable[10];
+int main(){
+int costmat[20][20];
+int routers, i, j, k, count = 0;
+printf("\nEnter the number of routers : ");
+scanf("%d", &routers); 
+printf("\nEnter the cost matrix :\n");
+for (i = 0; i < routers; i++)
+{
+for (j = 0; j < routers; j++)
+{
+scanf("%d", &costmat[i][j]);
+costmat[i][i] = 0;
+routingTable[i].cost[j] = costmat[i][j];
+routingTable[i].from[j] = j;
+}
+}
+int otherShorterPathExists;
+do
+{
+otherShorterPathExists = 0;
+for (i = 0; i < routers; i++)
+for (j = 0; j < routers; j++)
+for (k = 0; k < routers; k++)
+if (routingTable[i].cost[j] > costmat[i][k]+
+routingTable[k].cost[j])
+{
+routingTable[i].cost[j] = routingTable[i].cost[k] +
+routingTable[k].cost[j];
+routingTable[i].from[j] = k;
+otherShorterPathExists = 1;
+}
+} while (otherShorterPathExists != 0);
+for (i = 0; i < routers; i++)
+{
+printf("\n\n For router %d\n", i + 1);
+for (j = 0; j < routers; j++)
+{
+printf("\t\nRouter %d via %d distance %d ", j + 1, routingTable[i].from[j] + 1,
+routingTable[i].cost[j]);
+}
+}
+printf("\n\n");
 }
