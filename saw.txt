@@ -5,7 +5,8 @@ STOP AND WAIT ARQ ALGORITHM
 SERVER (RECEIVER) ALGORITHM:
 -----------------------------
 1.  Start
-2.  Declare necessary variables including server, newSock, k, m, p and buffer
+2.  Declare necessary variables including server, newSock, expectedFrame,
+    buffer, frame, data and an array for random values
 3.  Create a socket for TCP communication using socket(PF_INET, SOCK_STREAM, 0)
     If failed → print error and exit
 4.  Set up the server address structure (servAddr) with appropriate values
@@ -16,52 +17,59 @@ SERVER (RECEIVER) ALGORITHM:
     If failed → print error and exit
 7.  Accept a connection from client using accept(), storing in newSock
     If failed → print error and exit
-8.  Loop while k is not equal to 0:
-    8.1  Receive data from client into buffer using recv()
+8.  Initialize expectedFrame = 0
+9.  Loop continuously:
+    9.1  Receive data from client into buffer using recv()
          If failed → print error and exit
-    8.2  Check if received data starts with "frame":
-         If yes → print received successfully
-         If no  → print frame not received
-    8.3  Check value of m:
-         If even → send "ack" normally
-         If odd  → send "kca" (simulate ACK loss)
-                   wait 3 seconds
-                   retransmit "ack"
-    8.4  Decrement k and increment m
-9.  Close client socket and server socket using close()
-10. Stop
+    9.2  Extract frame number and message data from buffer
+    9.3  Display the received frame number and its data
+    9.4  Generate or read a random value to simulate ACK loss
+    9.5  If the random value indicates ACK loss:
+         → Print "ACK LOST"
+         → Do not send ACK and wait for retransmission
+    9.6  Else if received frame number equals expectedFrame:
+         → Increment expectedFrame
+         → Send ACK containing next expected frame number using send()
+         → Display ACK sent message
+    9.7  Else (duplicate frame received):
+         → Resend previous ACK
+         → Display duplicate frame message
+10. Close client socket and server socket using close()
+11. Stop
 
 
 CLIENT (SENDER) ALGORITHM:
 ---------------------------
 1.  Start
-2.  Declare necessary variables including client, k, m, p and buffer
+2.  Declare necessary variables including client, frame, buffer, data
+    and an array for random values
 3.  Create a socket for TCP communication using socket(PF_INET, SOCK_STREAM, 0)
     If failed → print error and exit
 4.  Set up the server address structure (servAddr) with appropriate values
     for family, port and IP address
 5.  Connect to the server using connect()
     If failed → print error and exit
-6.  Loop while k is not equal to 0:
-    6.1  Check value of m:
-         If even → send "frame" normally
-         If odd  → send "error" (simulate packet loss)
-                   wait 3 seconds
-                   retransmit "frame"
-    6.2  Receive ACK from server into buffer using recv()
-         If failed → print error and exit
-    6.3  Check if received data is "ack":
-         If yes → print ACK received
-         If no  → print ACK not received
-    6.4  Decrement k and increment m
-7.  Close socket using close()
-8.  Stop
+6.  Initialize frame number = 0
+7.  Loop continuously:
+    7.1  Accept message input from the user
+    7.2  Attach frame number with the message
+    7.3  Send the frame to the server using send()
+    7.4  Display frame sent message along with random value
+    7.5  Wait for ACK from server using recv()
+    7.6  If ACK is not received (timeout or loss):
+         → Print timeout or ACK lost message
+         → Retransmit the same frame
+    7.7  Else if ACK received:
+         → Display ACK received message
+         → Increment frame number
+8.  Close the socket using close()
+9.  Stop
 
 
 KEY RULE:
 ---------
 Send 1 frame → Wait for ACK → Only send next frame after ACK received
-If no ACK within time → retransmit same frame
+If ACK is lost → retransmit the same frame
 
 ROLES:
 ------
