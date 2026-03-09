@@ -1,50 +1,41 @@
 #include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <stdlib.h>
 #include <string.h>
-#include <arpa/inet.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
 
 int main() {
-    int client;
-    char buffer[1024];
-    struct sockaddr_in servAddr;
+    int sock;
+    struct sockaddr_in server_addr;
+    char buffer[BUFFER_SIZE];
 
-    client = socket(AF_INET, SOCK_STREAM, 0);
-    if (client < 0) {
-        perror("Socket creation failed");
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Connection Failed");
         return 1;
     }
-    printf("1. Socket created successfully.\n");
 
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(6265);
-    servAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    printf("Connected to TCP server.\n");
 
-    if (connect(client, (struct sockaddr*)&servAddr, sizeof(servAddr)) < 0) {
-        perror("Connection failed");
-        return 1;
+    while (1) {
+        printf("Client: ");
+        if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) break;
+        
+        send(sock, buffer, strlen(buffer), 0);
+
+        memset(buffer, 0, BUFFER_SIZE);
+        if (recv(sock, buffer, BUFFER_SIZE - 1, 0) <= 0) break;
+        
+        printf("Server: %s", buffer);
     }
-    printf("2. Connected to server.\n");
 
-    memset(buffer, 0, sizeof(buffer));
-    strcpy(buffer, "Hi! This is Client. Are you there?\n");
-    printf("3. Sending data to server...\n");
-    if (send(client, buffer, strlen(buffer), 0) < 0) {
-        perror("Send failed");
-        return 1;
-    }
-    printf("4. Data sent successfully.\n");
-
-    memset(buffer, 0, sizeof(buffer));
-    if (recv(client, buffer, sizeof(buffer), 0) < 0) {
-        perror("Receive failed");
-        return 1;
-    }
-    printf("5. Data received from server: %s", buffer);
-
-    close(client);
-    printf("6. Connection closed.\n");
-
+    close(sock);
     return 0;
 }
