@@ -1,44 +1,45 @@
-#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <arpa/inet.h>
 
 int main() {
-    int client;
-    struct sockaddr_in servAddr;
-    char servMsg[2000], cliMsg[2000];
-    socklen_t server_struct_length = sizeof(servAddr);  
+    int clientsocket, port;
+    struct sockaddr_in serveraddr;
+    socklen_t len;
+    char message[1024];
 
-    client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (client < 0) {
-        printf("Error while creating socket\n");
-        exit(1);
+    clientsocket = socket(AF_INET, SOCK_DGRAM, 0);
+    if (clientsocket < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
     }
-    printf("Socket created successfully\n");
 
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(2002);
-    servAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    memset(&serveraddr, 0, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
 
-    printf("Enter message to server: ");
-    fgets(cliMsg, sizeof(cliMsg), stdin);  
+    printf("Enter the port number: ");
+    scanf("%d", &port);
+    serveraddr.sin_port = htons(port);
+    serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    if (sendto(client, cliMsg, strlen(cliMsg), 0,
-        (struct sockaddr*)&servAddr, sizeof(servAddr)) < 0) {
-        printf("Unable to send message\n");
-        exit(1);
+    len = sizeof(serveraddr);
+
+    printf("\nSending message for server connection\n");
+    const char *initial_msg = "HI I AM CLIENT...";
+    sendto(clientsocket, initial_msg, strlen(initial_msg), 0, (struct sockaddr*)&serveraddr, len);
+
+    printf("Receiving message from server.\n");
+    memset(message, 0, sizeof(message));
+    ssize_t n = recvfrom(clientsocket, message, sizeof(message) - 1, 0, (struct sockaddr*)&serveraddr, &len);
+
+    if (n >= 0) {
+        message[n] = '\0';
+        printf("Message received: %s\n", message);
     }
-    printf("Message sent!\n");
 
-    if (recvfrom(client, servMsg, sizeof(servMsg), 0,
-        (struct sockaddr*)&servAddr, &server_struct_length) < 0) {
-        printf("Error while receiving server's msg\n");
-        exit(1);
-    }
-    printf("Message from server: %s\n", servMsg);   
-
-    close(client);
-    return 0;  
+    close(clientsocket);
+    return 0;
 }
