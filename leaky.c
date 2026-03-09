@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 int main() {
     int bucket_size, n, outgoing, incoming, store = 0;
 
@@ -10,10 +9,9 @@ int main() {
     printf("Enter No of Inputs: ");
     scanf("%d", &n);
 
-    while (n != 0) {
+    while (n > 0) {
         printf("\nEnter Incoming Packet Size: ");
         scanf("%d", &incoming);
-        printf("Incoming Packet Size: %d\n", incoming);
 
         if (incoming <= (bucket_size - store)) {
             store += incoming;
@@ -25,13 +23,19 @@ int main() {
         }
 
         store = store - outgoing;
-        if (store < 0)
-            store = 0;
-
-        printf("After Outgoing: %d packets left out of %d in buffer\n", store, bucket_size);
+        if (store < 0) store = 0;
+        printf("After Outgoing: %d packets left in buffer\n", store);
 
         n--;
     }
 
+    while (store > 0) {
+        printf("\nNo more incoming packets.\n");
+        store = store - outgoing;
+        if (store < 0) store = 0;
+        printf("Draining... After Outgoing: %d packets left in buffer\n", store);
+    }
+
+    printf("\nBucket is empty.\n");
     return 0;
 }
