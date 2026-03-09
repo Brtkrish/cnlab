@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 int main() {
     int bucket_size, n, outgoing, incoming, store = 0;
 
