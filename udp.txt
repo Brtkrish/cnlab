@@ -1,0 +1,47 @@
+=====================================
+UDP SERVER & CLIENT ALGORITHM
+=====================================
+
+SERVER ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including server socket,
+    servAddr, client_addr and buffers
+3.  Create a UDP socket using socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+    If failed → print error and exit
+4.  Set up the server address structure with appropriate values
+    for family, port and IP address
+5.  Bind the socket to the server address using bind()
+    If failed → print error and exit
+6.  Receive message from client using recvfrom()
+    If failed → print error and exit
+7.  Print received message
+8.  Send response back to client using sendto()
+    If failed → print error and exit
+9.  Close socket using close()
+10. Stop
+
+
+CLIENT ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including client socket,
+    servAddr and buffers
+3.  Create a UDP socket using socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+    If failed → print error and exit
+4.  Set up the server address structure with appropriate values
+    for family, port and IP address
+5.  Get message input from user using fgets()
+6.  Send message to server using sendto()
+    If failed → print error and exit
+7.  Receive response from server using recvfrom()
+    If failed → print error and exit
+8.  Print received message
+9.  Close socket using close()
+10. Stop
+
+
+KEY DIFFERENCE FROM TCP:
+------------------------
+TCP → connect() + send() / recv()
+UDP → NO connect() + sendto() / recvfrom()

@@ -1,0 +1,72 @@
+=====================================
+GO BACK N ARQ ALGORITHM
+=====================================
+
+SERVER (SENDER) ALGORITHM:
+---------------------------
+1.  Start
+2.  Declare necessary variables including server, acpt_sock, i,
+    write_buff, read_buff, set and timeout
+3.  Create a socket for TCP communication using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+4.  Set up the server address structure with appropriate values
+    for family, port and IP address
+5.  Bind the socket to the server address using bind()
+    If failed → print error and exit
+6.  Listen for incoming connections using listen()
+    If failed → print error and exit
+7.  Accept a connection from client using accept()
+    If failed → print error and exit
+8.  While i < 8:
+    8.1  Send frame i to client using send()
+    8.2  Send frame i+1 to client using send()
+    8.3  Start timer using select() with 2 second timeout
+    8.4  If timeout:
+         → Print "frame lost"
+         → Go back to lost frame
+         → Resend ALL frames from lost frame onwards
+    8.5  If ACK received:
+         → Read ACK from client using recv()
+         → If cumulative ACK → print cumulative acknowledgement
+         → If individual ACK → print individual acknowledgement
+         → Increment i
+9.  Close accepted socket and server socket using close()
+10. Stop
+
+
+CLIENT (RECEIVER) ALGORITHM:
+-----------------------------
+1.  Start
+2.  Declare necessary variables including cli_sock, i, flag,
+    write_buff and read_buff
+3.  Create a socket for TCP communication using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+4.  Set up the server address structure with appropriate values
+    for family, port and IP address
+5.  Connect to the server using connect()
+    If failed → print error and exit
+6.  For i = 0 to 8:
+    6.1  Clear buffers using memset()
+    6.2  If i == 5 and flag == 1:
+         → Set flag = 0
+         → Receive and discard frame (simulate packet loss)
+         → Decrement i
+         → Continue
+    6.3  Receive frame from server using recv()
+    6.4  Check if frame is in order:
+         If out of order → print discarding, decrement i
+         If in order    → print frame received
+                          send ACK using send()
+7.  Close socket using close()
+8.  Stop
+
+
+KEY RULE:
+---------
+If frame N is lost →
+Retransmit N, N+1, N+2... ALL frames from N onwards
+
+ROLES:
+------
+Server = SENDER
+Client = RECEIVER

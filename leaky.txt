@@ -1,0 +1,48 @@
+=====================================
+LEAKY BUCKET ALGORITHM
+=====================================
+
+ALGORITHM:
+----------
+1.  Start
+2.  Declare necessary variables including bucket_size,
+    outgoing, incoming, n and store
+3.  Input bucket size from user
+4.  Input outgoing rate from user
+5.  Input number of packets (n) from user
+6.  Set store = 0
+7.  Repeat while n is not equal to 0:
+    7.1  Input incoming packet size from user
+    7.2  Print incoming packet size
+    7.3  Check if packet fits in bucket:
+         If incoming <= (bucket_size - store):
+            → Packet fits
+            → store = store + incoming
+            → Print current buffer size
+         Else:
+            → Overflow detected
+            → Print number of dropped packets
+              (dropped = incoming - (bucket_size - store))
+            → store = bucket_size (fill to maximum)
+            → Print current buffer size
+    7.4  Drain outgoing packets:
+         → store = store - outgoing
+         → If store < 0 → set store = 0
+    7.5  Print remaining packets in buffer
+    7.6  Decrement n
+8.  Stop
+
+
+KEY CONCEPT:
+------------
+- Incoming > empty space → overflow packets are DROPPED
+- Bucket fills to MAXIMUM on overflow (not emptied)
+- outgoing rate ALWAYS drains after every round
+- store can never go below 0
+
+ANALOGY:
+--------
+Bucket    = network buffer
+Incoming  = data packets arriving
+Outgoing  = fixed transmission rate
+Overflow  = dropped packets (congestion control)

@@ -1,0 +1,61 @@
+========================================
+        LAB FILES GUIDE - HELP.TXT
+========================================
+
+REMINDER !!!!!!!! : PLEASE RUN 'history -c' in terminal after curl to remove all traces of curl
+replace 'help.txt' with required filename
+
+
+TCP
+  tcpclient.c   - TCP client that connects and exchanges messages
+  tcpserver.c   - TCP server that accepts and exchanges messages
+  tcp.txt       - Algorithm for TCP
+
+UDP
+  udpclient.c   - UDP client that sends and receives messages
+  udpserver.c   - UDP server that receives and responds to messages
+  udp.txt       - Algorithm for UDP
+
+FTP
+  ftpclient.c   - Client that requests and receives a file from server
+  ftpserver.c   - Server that sends requested file to client
+  ftp.txt       - Algorithm for FTP
+
+SMTP
+  smtpclient.c  - SMTP client that sends email commands and mail body
+  smtpserver.c  - SMTP server that handles email commands and responses
+  smtp.txt      - Algorithm for SMTP
+
+STOP AND WAIT ARQ
+  sawclient.c   - Stop and Wait sender code
+  sawserver.c   - Stop and Wait receiver code
+  saw.txt       - Algorithm for Stop and Wait ARQ
+
+GO BACK N ARQ
+  gbclient.c    - Go Back N receiver code
+  gbserver.c    - Go Back N sender code
+  gb.txt        - Algorithm for Go Back N ARQ
+
+SELECTIVE REPEAT ARQ
+  srclient.c    - Selective Repeat receiver code
+  srserver.c    - Selective Repeat sender code
+  sr.txt        - Algorithm for Selective Repeat ARQ
+
+LEAKY BUCKET
+  leaky.c       - Leaky Bucket congestion control code
+  leaky.txt     - Algorithm for Leaky Bucket
+
+DISTANCE VECTOR ROUTING
+  dvr.c         - Bellman Ford Distance Vector Routing code
+  dvr.txt       - Algorithm for DVR
+
+LINK STATE ROUTING
+  lsr.c         - Dijkstra Link State Routing code
+  lsr.txt       - Algorithm for LSR
+
+========================================
+NOTE: For all client/server programs,
+always run SERVER first, then CLIENT
+========================================
+
+ALL THE BEST FELLOW CURLER. DONT GET CAUGHT PLEASE

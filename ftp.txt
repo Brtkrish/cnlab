@@ -1,0 +1,75 @@
+=====================================
+FTP SERVER & CLIENT ALGORITHM
+=====================================
+
+SERVER ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including server_fd, new_socket,
+    buffer, error_msg, completed_msg and file pointer
+3.  Input port number from user
+4.  Create a TCP socket using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+5.  Set up the server address structure with appropriate values
+    for family, port and IP address
+6.  Bind the socket to the server address using bind()
+    If failed → print error and exit
+7.  Listen for incoming connections using listen()
+    If failed → print error and exit
+8.  Loop forever:
+    8.1  Accept a connection from client using accept()
+         If failed → continue to next iteration
+    8.2  Receive filename from client using recv()
+         If failed → send "error" to client, close socket, continue
+    8.3  Null terminate the received filename
+    8.4  Try to open the file using fopen()
+    8.5  If file not found:
+         → Send "error" to client using send()
+    8.6  If file found:
+         → Read file in chunks using fread()
+         → Send each chunk to client using send()
+         → Send "completed" when done using send()
+    8.7  Close client socket using close()
+9.  Stop
+
+
+CLIENT ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including socket descriptor,
+    port, name, fname, rcvg and file pointer
+3.  Input port number from user
+4.  Create a TCP socket using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+5.  Set up the server address structure with appropriate values
+    for family, port and IP address
+6.  Connect to the server using connect()
+    If failed → print error and exit
+7.  Input existing filename from user (file to request)
+8.  Input new filename from user (file to save as)
+9.  Open new file for writing using fopen()
+    If failed → print error and exit
+10. Send existing filename to server using send()
+11. Loop:
+    11.1 Receive data from server using recv()
+         If failed → print error and break
+    11.2 Null terminate received data
+    11.3 If "error" received:
+         → Print file not available and break
+    11.4 If "completed" received:
+         → Print file transferred successfully
+         → Close file and socket
+         → Break
+    11.5 Otherwise:
+         → Write received data to new file using fwrite()
+12. Stop
+
+
+KEY FLOW:
+---------
+Client sends filename →
+Server opens file →
+Server sends file in chunks →
+Server sends "completed" →
+Client writes chunks to new file →
+Transfer complete

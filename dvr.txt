@@ -1,0 +1,37 @@
+=====================================
+BELLMAN FORD - DISTANCE VECTOR ROUTING (DVR)
+=====================================
+
+ALGORITHM:
+----------
+1.  Start
+2.  Declare necessary variables including H (hops/nodes),
+    L (links), S (source), dist array and link structure
+3.  Input number of hops (H) from user
+4.  Input number of links (L) from user
+5.  Input source node (S) from user
+6.  Initialize dist array:
+    - Set all dist[i] = INFINITY
+    - Set dist[S] = 0
+7.  Input all links:
+    - For each link i: input source, destination and weight
+8.  Repeat (H - 1) times:
+    8.1  For every link j (u → v with weight w):
+         If dist[u] != INFINITY and dist[u] + w < dist[v]:
+            → Update dist[v] = dist[u] + w
+9.  Check for negative weight cycle:
+    For every link i (u → v with weight w):
+       If dist[u] != INFINITY and dist[u] + w < dist[v]:
+          → Print "Network contains negative weight cycle"
+          → Free memory and exit
+10. Print shortest distance from source to all nodes
+11. Free allocated memory
+12. Stop
+
+
+KEY CONCEPT:
+------------
+- Relax all edges (H-1) times
+- If distance still updates after (H-1) times → negative cycle
+- Uses dynamic programming approach
+- Each node only knows about its neighbors (distributed)

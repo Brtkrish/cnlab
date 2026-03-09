@@ -1,0 +1,72 @@
+=====================================
+SELECTIVE REPEAT ARQ ALGORITHM
+=====================================
+
+SERVER (SENDER) ALGORITHM:
+---------------------------
+1.  Start
+2.  Declare necessary variables including s_sock, c_sock,
+    buff, set, timeout and ok array
+3.  Create a socket for TCP communication using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+4.  Set up the server address structure with appropriate values
+    for family, port and IP address
+5.  Bind the socket to the server address using bind()
+    If failed → print error and exit
+6.  Listen for incoming connections using listen()
+    If failed → print error and exit
+7.  Accept a connection from client using accept()
+    If failed → print error and exit
+8.  While total ACKs < 9:
+    8.1  Send window of 3 frames to client using send()
+    8.2  For each frame in window:
+         → Start timer using select() with 2 second timeout
+         → If timeout:
+            Print "timeout for frame"
+            Resend ONLY that specific frame
+         → If NACK received:
+            Print "corrupted frame"
+            Resend ONLY that specific frame
+         → If ACK received:
+            Increment total ACKs
+            Move to next frame
+9.  Close client socket and server socket using close()
+10. Stop
+
+
+CLIENT (RECEIVER) ALGORITHM:
+-----------------------------
+1.  Start
+2.  Declare necessary variables including c_sock, count,
+    msg1, msg3, msg2 and buff
+3.  Create a socket for TCP communication using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+4.  Set up the server address structure with appropriate values
+    for family, port and IP address
+5.  Connect to the server using connect()
+    If failed → print error and exit
+6.  While count < 8:
+    6.1  Clear buffers using memset()
+    6.2  Receive frame from server using recv()
+         If failed → print error and break
+    6.3  Check if frame is corrupted using isfaulty():
+         If corrupted:
+            → Send NACK to server using send()
+            → Do NOT increment count
+         If not corrupted:
+            → Send ACK to server using send()
+            → Increment count
+7.  Close socket using close()
+8.  Stop
+
+
+KEY RULE:
+---------
+If frame N is lost →
+Retransmit ONLY frame N
+All other frames are kept
+
+ROLES:
+------
+Server = SENDER
+Client = RECEIVER

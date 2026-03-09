@@ -1,0 +1,117 @@
+=====================================
+SMTP SERVER & CLIENT ALGORITHM
+=====================================
+
+SERVER ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including sockfd, str, msg,
+    server and client address structures
+3.  Check command line arguments (argc != 2)
+    If wrong → print error and exit
+4.  Create UDP socket using socket(AF_INET, SOCK_DGRAM, 0)
+    If failed → print error and exit
+5.  Set up server address structure:
+    - Family = AF_INET
+    - Port = htons(argv[1])
+    - Address = INADDR_ANY
+6.  Bind socket to server address using bind()
+    If failed → print error and exit
+7.  Wait and receive initial message from client using recvfrom()
+    Print received message
+8.  Send greeting response "220 127.0.0.1" to client using sendto()
+9.  Receive "HELO" command from client using recvfrom()
+    If not "HELO" → print error
+    Print received command
+10. Send "250 ok" response to client using sendto()
+11. Receive "MAIL FROM" command from client using recvfrom()
+    If not "MAIL FROM" → print error
+    Print received command
+12. Send "250 ok" response to client using sendto()
+13. Receive "RCPT TO" command from client using recvfrom()
+    If not "RCPT TO" → print error
+    Print received command
+14. Send "250 ok" response to client using sendto()
+15. Receive "DATA" command from client using recvfrom()
+    If not "DATA" → print error
+    Print received command
+16. Send "354 Go ahead" response to client using sendto()
+17. Receive mail body from client using recvfrom()
+    Print mail body
+18. Receive "QUIT" command from client using recvfrom()
+    If not "QUIT" → print error
+19. Send "221 OK" response to client using sendto()
+20. Close socket using close()
+21. Stop
+
+
+CLIENT ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including sockfd, str, msg,
+    mail_f, mail_to, server and client address structures
+3.  Check command line arguments (argc != 3)
+    If wrong → print error and exit
+4.  Create UDP socket using socket(AF_INET, SOCK_DGRAM, 0)
+    If failed → print error and exit
+5.  Set up server address structure:
+    - Family = AF_INET
+    - Port = htons(argv[2])
+    - Address = INADDR_ANY
+6.  Send initial "hi" message to server using sendto()
+7.  Receive greeting response from server using recvfrom()
+    If not "220" → print connection not established
+    Print greeting message
+8.  Send "HELO 127.0.0.1" to server using sendto()
+9.  Receive response from server using recvfrom()
+    If not "250" → print error
+    Print server response
+10. Input FROM address from user
+    Send "MAIL FROM" + address to server using sendto()
+11. Receive response from server using recvfrom()
+    If not "250" → print error
+    Print server response
+12. Input TO address from user
+    Send "RCPT TO" + address to server using sendto()
+13. Receive response from server using recvfrom()
+    If not "250" → print error
+    Print server response
+14. Send "DATA" to server using sendto()
+15. Receive response from server using recvfrom()
+    If not "354" → print error
+    Print server response
+16. Input mail body from user (end with '$')
+    Send mail body to server using sendto()
+17. Send "QUIT" to server using sendto()
+18. Receive response from server using recvfrom()
+    If not "221" → print error
+    Print goodbye message
+19. Close socket using close()
+20. Stop
+
+
+SMTP COMMAND FLOW:
+------------------
+Client                          Server
+  |                               |
+  |------- "hi" --------------->  |
+  |<------ "220 127.0.0.1" -----  |
+  |                               |
+  |------- "HELO 127.0.0.1" --->  |
+  |<------ "250 ok" ------------  |
+  |                               |
+  |------- "MAIL FROM" -------->  |
+  |<------ "250 ok" ------------  |
+  |                               |
+  |------- "RCPT TO" ---------->  |
+  |<------ "250 ok" ------------  |
+  |                               |
+  |------- "DATA" ------------->  |
+  |<------ "354 Go ahead" ------  |
+  |                               |
+  |------- mail body ---------->  |
+  |                               |
+  |------- "QUIT" ------------->  |
+  |<------ "221 OK" ------------  |
+  |                               |
+close()                        close()

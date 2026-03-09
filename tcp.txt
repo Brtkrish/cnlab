@@ -1,0 +1,46 @@
+=====================================
+TCP SERVER & CLIENT ALGORITHM
+=====================================
+
+SERVER ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including server, newSock and buffer
+3.  Create a TCP socket using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+4.  Set up the server address structure (servAddr) with appropriate values
+    for family, port and IP address
+5.  Bind the socket to the server address using bind()
+    If failed → print error and exit
+6.  Listen for incoming connections using listen()
+    If failed → print error and exit
+7.  Accept a connection from client using accept()
+    If failed → print error and exit
+8.  Receive message from client into buffer using recv()
+9.  Print received data
+10. Send response to client using send()
+11. Close client socket and server socket using close()
+12. Stop
+
+
+CLIENT ALGORITHM:
+-----------------
+1.  Start
+2.  Declare necessary variables including client and buffer
+3.  Create a TCP socket using socket(AF_INET, SOCK_STREAM, 0)
+    If failed → print error and exit
+4.  Set up the server address structure (servAddr) with appropriate values
+    for family, port and IP address
+5.  Connect to the server using connect()
+    If failed → print error and exit
+6.  Send message to server using send()
+7.  Receive response from server into buffer using recv()
+8.  Print received data
+9.  Close socket using close()
+10. Stop
+
+
+KEY FUNCTIONS:
+--------------
+TCP Server  → socket → bind → listen → accept → recv → send → close
+TCP Client  → socket → connect → send → recv → close

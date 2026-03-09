@@ -1,0 +1,53 @@
+=====================================
+DIJKSTRA - LINK STATE ROUTING (LSR)
+=====================================
+
+ALGORITHM:
+----------
+1.  Start
+2.  Declare necessary variables including n (routers),
+    cost matrix, dist array, visited array and source router
+3.  Input number of routers (n) from user
+4.  Input cost matrix:
+    - For each pair (i, j):
+      If cost[i][j] == 0 and i != j:
+         → Set cost[i][j] = INF (no direct connection)
+5.  Input source router (src) from user
+6.  Initialize arrays:
+    - dist[i] = cost[src][i] for all i
+    - visited[i] = 0 for all i
+    - dist[src] = 0
+    - visited[src] = 1
+7.  Repeat (n - 1) times:
+    7.1  Find unvisited node with minimum distance:
+         - For all j where visited[j] == 0:
+           If dist[j] < min:
+              → Set min = dist[j]
+              → Set next = j
+    7.2  Mark next as visited:
+         - visited[next] = 1
+    7.3  Update distances through next:
+         - For all j where visited[j] == 0:
+           If min + cost[next][j] < dist[j]:
+              → dist[j] = min + cost[next][j]
+8.  Print shortest distance from source to all routers
+9.  Stop
+
+
+KEY CONCEPT:
+------------
+- Each router has FULL knowledge of entire network topology
+- Greedy approach - always picks minimum distance node next
+- Cannot detect negative weight cycles
+- Faster and more efficient than Bellman Ford
+
+
+LSR vs DVR COMPARISON:
+----------------------
+Feature          LSR (Dijkstra)      DVR (Bellman Ford)
+---------------------------------------------------------
+Knowledge        Full topology       Neighbor only
+Algorithm        Dijkstra            Bellman Ford
+Iterations       n-1 times           H-1 times
+Negative cycle   Not detected        Detected
+Speed            Faster              Slower
